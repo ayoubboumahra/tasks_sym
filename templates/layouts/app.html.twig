@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>{% block title %}{% endblock %}</title>
+    
+    {% block styles %}
+    
+        <link rel="stylesheet" href="{{ asset('./libs/bootstrap/css/bootstrap.css') }}" />
+    
+    {% endblock %}
+
+</head>
+
+<body>
+
+    {% include "./partials/navbar.html.twig" %}
+
+    <div class="container py-4">
+
+        {% block content %}{% endblock %}
+
+    </div>
+
+    {% block scripts %}
+
+        <script src="{{ asset('./libs/jquery/js/jquery.js') }}"></script>
+        <script src="{{ asset('./libs/popper/js/popper.js') }}"></script>
+        <script src="{{ asset('./libs/bootstrap/js/bootstrap.js') }}"></script>
+
+    {% endblock %}
+
+</body>
+
+</html>
