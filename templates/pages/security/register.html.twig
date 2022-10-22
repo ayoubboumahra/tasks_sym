@@ -1,0 +1,35 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+    
+    <div class="card shadow">
+
+        <div class="card-body">
+    
+            <h1 class="mb-3">Register</h1>
+
+            {{ form_start(registrationForm) }}
+                
+                {{ form_row(registrationForm.name) }}
+
+                {{ form_row(registrationForm.email) }}
+                
+                {{ 
+                    form_row(registrationForm.plainPassword, {
+                        label: 'Password'
+                    }) 
+                }}
+
+                {{ form_row(registrationForm.agreeTerms) }}
+
+                <button type="submit" class="btn btn-success">Register</button>
+
+            {{ form_end(registrationForm) }}
+
+        </div>
+
+    </div>
+
+{% endblock %}
