@@ -28,7 +28,7 @@
 
             {% for message in messages %}
 
-                <div class="alert alert-{% if label == 'success' %}success{% else %}danger{% endif %}">
+                <div style="cursor: pointer" class="alert alert-{% if label == 'success' %}success{% else %}danger{% endif %}">
 
                     {{ message }}
 
@@ -48,6 +48,18 @@
         <script src="{{ asset('./libs/jquery/js/jquery.js') }}"></script>
         <script src="{{ asset('./libs/popper/js/popper.js') }}"></script>
         <script src="{{ asset('./libs/bootstrap/js/bootstrap.js') }}"></script>
+
+        <script>
+        
+            $(document).on("click", ".alert", function(){
+
+                $(this).fadeOut(400, function(){
+                    $(this).remove();
+                });
+
+            });
+        
+        </script>
 
     {% endblock %}
 
