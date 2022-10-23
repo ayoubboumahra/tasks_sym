@@ -1,0 +1,36 @@
+{% extends './layouts/app.html.twig' %}
+
+{% block title "Detail task" %}
+
+{% block content %}
+    
+    <div class="card">
+        <div class="card-header">
+            <a class="btn btn-primary btn-sm float-right" href="{{ path('app_task_index') }}">Back to list</a>
+            <span>Detail task</span>
+        </div>
+        <div class="card-body">
+            <h1>{{ task.title }}</h1>
+            <hr>
+            <p class="m-0 font-weight-bold">Description:</p>
+            <p>{{ task.description }}</p>
+            <p class="m-0 font-weight-bold">Assigned to:</p>
+            <p>{{ task.getAssignedTo() }}</p>
+            <p class="m-0 font-weight-bold">Priority:</p>
+            <p>{{ task.priority }}</p>
+            <p class="m-0 font-weight-bold">Status:</p>
+            <p>{{ task.status }}</p>
+            <p class="m-0 font-weight-bold">Created at:</p>
+            <p>{{ task.getCreatedAt() }}</p>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-end">
+                <a class="btn btn-warning btn-sm mr-2" href="{{ path('app_task_edit', { id: task.id }) }}">Edit</a>
+                <form method="POST" action="{{ path('app_task_destroy', { id: task.id }) }}">
+                    <input type="hidden" name="_method" value="DELETE" />
+                    <input type="hidden" name="_token" value="{{ csrf_token('task_delete_'~task.id) }}" />
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+{% endblock %}

@@ -22,6 +22,7 @@ security:
                     - App\Security\AppAuthenticator
             logout:
                 path: app_logout
+                target: app_login
                 # where to redirect after logout
                 # target: app_any_route
 
@@ -34,5 +35,5 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/app/*, roles: ROLE_USER }
         # - { path: ^/profile, roles: ROLE_USER }

@@ -1,0 +1,18 @@
+{% extends './layouts/app.html.twig' %}
+
+{% block title "Create task" %}
+
+{% block content %}
+
+    <div>
+
+        <a class="btn btn-primary float-right" href="{{ path('app_task_index') }}">Back to the list of tasks</a>
+
+        <h1>Create New Task</h1>
+
+    </div>
+
+    {{ form_start(task_form) }}
+    {{ form_end(task_form) }}
+
+{% endblock %}
