@@ -47,6 +47,14 @@ class TaskRepository extends ServiceEntityRepository
         }
     }
 
+    public function findByUser($value)
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.created_by = :val')
+            ->setParameter('val', $value)
+        ;
+    }
+
     // /**
     //  * @return Task[] Returns an array of Task objects
     //  */
