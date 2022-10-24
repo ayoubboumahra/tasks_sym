@@ -7,7 +7,7 @@
 
         <a class="btn btn-success mb-3 float-right" href="{{ path('app_task_create') }}">Create new task</a>
         
-        <h1>Tasks</h1>
+        <h1>Tasks({{ tasks.getTotalItemCount }})</h1>
 
     </div>
 
@@ -28,7 +28,7 @@
 
         <tbody>
             {% for item in tasks %}
-                <tr class="{% if item.status == 'completed' %}bg-success text-light font-weight-bold{% endif %}">
+                <tr>
                     <td>{{ item.title }}</td>
                     <td>{{ item.getAssignedTo().getName() }}</td>
                     <td>{{ item.priority }}</td>
@@ -58,5 +58,9 @@
         </tbody>
 
     </table>
+
+    <div class="navigation">
+        {{ knp_pagination_render(tasks) }}
+    </div>
 
 {% endblock %}
