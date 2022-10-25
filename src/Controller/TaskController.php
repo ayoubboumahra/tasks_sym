@@ -23,12 +23,31 @@ class TaskController extends AbstractController
      */
     public function index (Request $request,PaginatorInterface $paginator, EntityManagerInterface $em): Response
     {
-        $query = $em->getRepository(Task::class)
-            ->createQueryBuilder('t')
-            ->where("t.created_by = :id")
-            ->setParameter('id', $this->getUser()->getId())
-            ->orderBy("t.id","DESC")
-            ->getQuery();;
+        $user_id = $this->getUser()->getId();
+
+        if ( $this->isGranted('ROLE_ADMIN') ) {
+    
+            $query = $em->getRepository(Task::class)
+                ->createQueryBuilder('t')
+                ->where("t.created_by = :id")
+                ->setParameter('id', $user_id)
+                ->orderBy("t.id","DESC")
+                ->getQuery();
+        
+        } elseif( $this->isGranted("ROLE_SUPER_ADMIN") ) {
+
+
+
+        } else {
+
+            $query = $em->getRepository(Task::class)
+                ->createQueryBuilder('t')
+                ->where('t.assigned_to = :id')
+                ->setParameter('id', $user_id)
+                ->orderBy("t.id", "DESC")
+                ->getQuery();
+
+        }
 
         $tasks = $paginator->paginate(
             $query,
@@ -46,6 +65,14 @@ class TaskController extends AbstractController
     public function create (Request $request)
     {
         $task = new Task();
+
+        if ( !$this->isGranted('TASK_CREATE', $task) ) {
+
+            $this->addFlash("error", "Sorry but you don't have permission to access this page.");
+
+            return $this->redirectToRoute("app_task_index");
+
+        }
 
         $form = $this->createForm(TaskType::class, $task, [
             "method" => "POST",
@@ -90,9 +117,9 @@ class TaskController extends AbstractController
             "slug" => $slug
         ]);
 
-        if  ( is_null( $task ) ) {
+        if ( !$this->isGranted('TASK_VIEW', $task) ) {
 
-            $this->addFlash("error","Sorry, but the task does not exists.");
+            $this->addFlash("error", "Sorry but you don't have permission to access this page.");
 
             return $this->redirectToRoute("app_task_index");
 
@@ -114,9 +141,9 @@ class TaskController extends AbstractController
             "id" => $id
         ]);
 
-        if  ( is_null( $task ) ) {
+        if ( !$this->isGranted('TASK_EDIT', $task) ) {
 
-            $this->addFlash("error","Sorry, but the task does not exists.");
+            $this->addFlash("error", "Sorry but you don't have permission to access this page.");
 
             return $this->redirectToRoute("app_task_index");
 
@@ -163,8 +190,7 @@ class TaskController extends AbstractController
      * return Response
      */
     public function destroy (string $id, Request $request): Response
-    {
-        
+    {   
         $doctrine = $this->getDoctrine();
 
         $token = $request->request->get('_token');
@@ -173,9 +199,9 @@ class TaskController extends AbstractController
             "id" => $id
         ]);
 
-        if  ( is_null( $task ) ) {
+        if ( !$this->isGranted('TASK_DELETE', $task) ) {
 
-            $this->addFlash("error","Sorry, but the task does not exists.");
+            $this->addFlash("error", "Sorry but you don't have permission to run this action.");
 
             return $this->redirectToRoute("app_task_index");
 
