@@ -14,8 +14,10 @@
             <hr>
             <p class="m-0 font-weight-bold">Description:</p>
             <p>{{ task.description }}</p>
-            <p class="m-0 font-weight-bold">Assigned to:</p>
-            <p>{{ task.getAssignedTo() }}</p>
+            {% if is_granted('ROLE_ADMIN') %}
+                <p class="m-0 font-weight-bold">Assigned to:</p>
+                <p>{{ task.getAssignedTo() }}</p>
+            {% endif %}
             <p class="m-0 font-weight-bold">Priority:</p>
             <p>{{ task.priority }}</p>
             <p class="m-0 font-weight-bold">Status:</p>
@@ -25,12 +27,16 @@
         </div>
         <div class="card-footer">
             <div class="d-flex justify-content-end">
-                <a class="btn btn-warning btn-sm mr-2" href="{{ path('app_task_edit', { id: task.id }) }}">Edit</a>
-                <form method="POST" action="{{ path('app_task_destroy', { id: task.id }) }}">
-                    <input type="hidden" name="_method" value="DELETE" />
-                    <input type="hidden" name="_token" value="{{ csrf_token('task_delete_'~task.id) }}" />
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
-                </form>
+                {% if is_granted('TASK_EDIT', task) %}
+                    <a class="btn btn-warning btn-sm mr-2" href="{{ path('app_task_edit', { id: task.id }) }}">Edit</a>
+                {% endif %}
+                {% if is_granted('TASK_DELETE', task) %}
+                    <form method="POST" action="{{ path('app_task_destroy', { id: task.id }) }}">
+                        <input type="hidden" name="_method" value="DELETE" />
+                        <input type="hidden" name="_token" value="{{ csrf_token('task_delete_'~task.id) }}" />
+                        <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
 {% endblock %}
