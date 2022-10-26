@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use App\Repository\UserRepository;
 use Carbon\Carbon;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -16,6 +17,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @UniqueEntity(fields={"name"}, message="There is already an account with this name")
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
  * @ORM\HasLifecycleCallbacks
+ * @Gedmo\SoftDeleteable(fieldName="deleted_at")
  */
 class User implements UserInterface
 {
@@ -49,11 +51,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Gedmo\Timestampable(on="create")
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Gedmo\Timestampable(on="update")
      */
     private $updated_at;
 
@@ -61,6 +65,11 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity=Task::class, mappedBy="created_by")
      */
     private $tasks;
+
+    /**
+     * @ORM\Column(name="deleted_at", type="datetime", nullable=true)
+     */
+    private $deleted_at;
 
     public function __construct()
     {
@@ -171,30 +180,6 @@ class User implements UserInterface
     }
 
     /**
-    * @ORM\PrePersist
-    */
-    public function onPrePersist ()
-    {
-        $now = date_create();
-
-        $this->created_at = $now;
-
-        $this->updated_at = $now;
-    
-    }
-
-    /**
-    * @ORM\PreUpdate
-    */
-    public function onPreUpdate ()
-    {
-        $now = date_create();
-
-        $this->updated_at = $now;
-    
-    }
-
-    /**
      * @return Collection<int, Task>
      */
     public function getTasks(): Collection
@@ -227,5 +212,17 @@ class User implements UserInterface
     public function __toString()
     {
         return $this->name;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    {
+        $this->deleted_at = $deleted_at;
+
+        return $this;
     }
 }
