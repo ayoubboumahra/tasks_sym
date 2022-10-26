@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
+use Gedmo\Slug;
 use Carbon\Carbon;
-use Cocur\Slugify\Slugify;
+use Gedmo\Sluggable\Sluggable;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TaskRepository;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -13,6 +15,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Entity(repositoryClass=TaskRepository::class)
  * @UniqueEntity("title")
  * @ORM\HasLifecycleCallbacks
+ * @Gedmo\SoftDeleteable(fieldName="deleted_at")
  */
 class Task
 {
@@ -30,6 +33,7 @@ class Task
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Gedmo\Slug(fields={"title"})
      */
     private $slug;
 
@@ -56,19 +60,26 @@ class Task
     private $priority;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=255)
      */
-    private $status;
+    private $status = "pending";
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Gedmo\Timestampable(on="create")
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Gedmo\Timestampable(on="update")
      */
     private $updated_at;
+
+    /**
+     * @ORM\Column(name="deleted_at", type="datetime", nullable=true)
+     */
+    private $deleted_at;
 
     public function getId(): ?int
     {
@@ -164,40 +175,20 @@ class Task
         return Carbon::parse($this->created_at)->diffForHumans();
     }
 
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
     public function getUpdatedAt(): ?string
     {
         return Carbon::parse($this->updated_at)->diffForHumans();
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): self
+    public function getDeletedAt(): ?\DateTimeInterface
     {
-        $this->updated_at = $updated_at;
-
-        return $this;
+        return $this->deleted_at;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function onPrePersist()
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
     {
-        $now = date_create();
+        $this->deleted_at = $deleted_at;
 
-        $this->created_at = $now;
-
-        $this->updated_at = $now;
-
-        $this->status = "pending";
-
-        $slugify = new Slugify();
-
-        $this->slug = $slugify->slugify($this->title);
+        return $this;
     }
 }
