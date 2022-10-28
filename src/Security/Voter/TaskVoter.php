@@ -4,6 +4,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Task;
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Security;
@@ -16,9 +17,9 @@ class TaskVoter extends Voter
     public const EDIT = 'TASK_EDIT';
     public const DELETE = 'TASK_DELETE';
 
-    public function __construct( private Security $security ) {}
+    public function __construct( private Security $security, private EntityManagerInterface $em ) {}
 
-    protected function supports($attribute, $subject): bool
+    protected function supports( $attribute, $subject ): bool
     {
         // replace with your own logic
         // https://symfony.com/doc/current/security/voters.html
@@ -26,18 +27,26 @@ class TaskVoter extends Voter
             //&& $subject instanceof \App\Entity\Task;
     }
 
-    protected function voteOnAttribute($attribute, $task, TokenInterface $token): bool
+
+    protected function voteOnAttribute( $attribute, $task, TokenInterface $token ): bool
     {
         $user = $token->getUser();
         // if the user is anonymous, do not grant access
         if (!$user instanceof UserInterface) {
             return false;
         }
+        /*
+        if ( is_array($task) ) {
+
+            $task = $this->em->getRepository(Task::class)
+                ->find($task['id']);
+
+        }
 
         if ( !$task instanceof Task or is_null( $task ) ) {
             return false;
         }
-
+        */
         // ... (check conditions and return true to grant permission) ...
         switch ($attribute) {
             case self::CREATE:
@@ -70,21 +79,39 @@ class TaskVoter extends Voter
         return $this->security->isGranted('ROLE_ADMIN');
     }
 
-    private function canView (Task $task, User $user)
+    private function canView ($task, User $user)
     {
-        return ( $this->security->isGranted('ROLE_ADMIN') and $task->getCreatedBy() == $user )
-            or $task->getAssignedTo() == $user;
+        $more = false;
+        
+        if ( $task instanceof Task ) {
+
+            $more = $task->getAssignedTo() == $user;
+
+        } 
+        
+        return $this->check_role ($task, $user) or $more;
+    
     }
 
-    private function canEdit (Task $task, User $user)
+    private function canEdit ($task, User $user)
     {
-        return $this->security->isGranted('ROLE_ADMIN') and $task->getCreatedBy() == $user;
+        return $this->check_role ($task, $user);
     }
 
-    private function canDelete (Task $task, User $user)
+    private function canDelete ($task, User $user)
     {
+        return $this->check_role ($task, $user);
+    }
 
-        return $this->security->isGranted("ROLE_ADMIN") and $task->getCreatedBy() == $user;
+    private function check_role ($task, $user)
+    {
+        if ( $task instanceof Task ) {
+
+            return ( $this->security->isGranted('ROLE_ADMIN') and $task->getCreatedBy() == $user );
+        
+        }
+
+        return false;
 
     }
 }

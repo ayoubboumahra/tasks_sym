@@ -23,16 +23,21 @@ class TaskController extends AbstractController
      */
     public function index (Request $request,PaginatorInterface $paginator, EntityManagerInterface $em): Response
     {
-        $user_id = $this->getUser()->getId();
+        //$user_id = $this->getUser()->getId();
 
+        $user = $this->getUser();
+
+        $q = $request->query->get('q');
+
+        $permission = $this->isGranted('ROLE_ADMIN');
+
+        $query = $em->getRepository(Task::class)
+            ->findByUserRole( $user, $q, $permission );
+        /*
         if ( $this->isGranted('ROLE_ADMIN') ) {
     
             $query = $em->getRepository(Task::class)
-                ->createQueryBuilder('t')
-                ->where("t.created_by = :id")
-                ->setParameter('id', $user_id)
-                ->orderBy("t.id","DESC")
-                ->getQuery();
+                ->findByUserRole($user_id,$q, $this->isGranted('ROLE_ADMIN'));
         
         } elseif( $this->isGranted("ROLE_SUPER_ADMIN") ) {
 
@@ -42,19 +47,22 @@ class TaskController extends AbstractController
 
             $query = $em->getRepository(Task::class)
                 ->createQueryBuilder('t')
-                ->where('t.assigned_to = :id')
+                ->andWhere('t.assigned_to = :id')
                 ->setParameter('id', $user_id)
                 ->orderBy("t.id", "DESC")
                 ->getQuery();
 
         }
+        */
 
         $tasks = $paginator->paginate(
             $query,
             $request->query->getInt('page',1),
             5
         );
-        
+
+        //dd($tasks);
+
         return $this->render("./pages/task/index.html.twig", compact("tasks"));
 
     }
@@ -109,11 +117,10 @@ class TaskController extends AbstractController
      * @Route("/tasks/{slug}", name="task_show", methods={"GET"})
      * @return Response
      */
-    public function show (string $slug)
+    public function show (string $slug, EntityManagerInterface $em)
     {
-        $doctrine = $this->getDoctrine();
 
-        $task = $doctrine->getRepository(Task::class)->findOneBy([
+        $task = $em->getRepository(Task::class)->findOneBy([
             "slug" => $slug
         ]);
 
@@ -133,11 +140,9 @@ class TaskController extends AbstractController
      * @Route("/tasks/{id}/edit", name="task_edit", methods={"GET","PUT"})
      * @return Response
      */
-    public function edit (string $id, Request $request): Response
+    public function edit (string $id, Request $request, EntityManagerInterface $em): Response
     {
-        $doctrine = $this->getDoctrine();
-
-        $task = $doctrine->getRepository(Task::class)->findOneBy([
+        $task = $em->getRepository(Task::class)->findOneBy([
             "id" => $id
         ]);
 
@@ -189,13 +194,11 @@ class TaskController extends AbstractController
      * @Route("/tasks/{id}", name="task_destroy", methods={"DELETE"})
      * return Response
      */
-    public function destroy (string $id, Request $request): Response
+    public function destroy (string $id, Request $request, EntityManagerInterface $em): Response
     {   
-        $doctrine = $this->getDoctrine();
-
         $token = $request->request->get('_token');
 
-        $task = $doctrine->getRepository(Task::class)->findOneBy([
+        $task = $em->getRepository(Task::class)->findOneBy([
             "id" => $id
         ]);
 
@@ -208,8 +211,6 @@ class TaskController extends AbstractController
         }
        
         if ( $this->isCsrfTokenValid("task_delete_".$task->getId(),$token) ) {
-
-            $em = $doctrine->getManager();
 
             $em->remove($task);
 

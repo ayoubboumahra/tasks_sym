@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Task;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -47,12 +48,38 @@ class TaskRepository extends ServiceEntityRepository
         }
     }
 
-    public function findByUser($value)
+    public function findByUserRole ( User $user, ?string $s, bool $admin = false )
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.created_by = :val')
-            ->setParameter('val', $value)
-        ;
+        $query = $this->createQueryBuilder('t')
+            ->innerJoin('t.assigned_to', 'a')
+            ->addSelect('a')
+            ->innerJoin('t.created_by', 'c')
+            ->addSelect('c');
+            //->select('t.id,t.title,t.slug,t.priority,t.status,u.name,t.created_at,c.id as created_by')
+            //->join('t.assigned_to', 'u')
+            //->join('t.created_by', 'c');
+
+        if ( $admin ) {
+
+            $query->andWhere('c.id = :val')
+                ->setParameter('val', $user->getId());
+
+        } else {
+
+            $query->andWhere('a.id = :val')
+                ->setParameter('val', $user->getId());
+
+        }
+
+        if ( $s ) {
+
+            $query->andWhere('(t.title LIKE :s) OR (t.priority LIKE :s) OR (t.status LIKE :s) OR (a.name LIKE :s)')
+                ->setParameter('s',"%$s%");
+
+        }
+            
+        return $query->orderBy('t.created_at','DESC')
+            ->getQuery();
     }
 
     // /**
