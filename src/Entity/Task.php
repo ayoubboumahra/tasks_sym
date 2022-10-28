@@ -43,14 +43,16 @@ class Task
     private $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tasks")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tasks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(nullable=false)
+     * @ORM\OrderBy({"created_at"="DESC"})
      */
     private $created_by;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tasks")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tasks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(nullable=false)
+     * @ORM\OrderBy({"created_at"="DESC"})
      */
     private $assigned_to;
 

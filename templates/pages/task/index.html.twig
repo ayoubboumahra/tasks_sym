@@ -8,6 +8,18 @@
             <a class="btn btn-success mb-3 float-right" href="{{ path('app_task_create') }}">Create new task</a>
         {% endif %}
         <h1>Tasks({{ tasks.getTotalItemCount }})</h1>
+        <form>
+            <div class="input-group mb-3">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    value="{{ app.request.query.get('q') }}"
+                    placeholder="Search for specific tasks" 
+                    name="q"
+                />
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </form>
 
     </div>
 
@@ -33,11 +45,11 @@
                 <tr>
                     <td>{{ item.title }}</td>
                     {% if is_granted('ROLE_ADMIN') %}
-                        <td>{{ item.getAssignedTo().getName() }}</td>
+                        <td>{{ item.assignedTo.name }}</td>
                     {% endif %}
                     <td>{{ item.priority }}</td>
                     <td>{{ item.status }}</td>
-                    <td>{{ item.getCreatedAt() }}</td>
+                    <td>{{ item.createdAt | date('Y-m-d H:i') }}</td>
                     <td class="d-flex">
                         {% if is_granted('TASK_VIEW', item) %}
                             <a class="btn btn-info btn-sm mr-1" href="{{ path('app_task_show', { slug: item.slug }) }}">Show</a>
@@ -53,11 +65,16 @@
                             </form>
                         {% endif %}
                         {% if is_granted('ROLE_ADMIN') %}
-                            <a class="btn btn-dark btn-sm" href="#">Canceled</a>
-                            <a class="btn btn-light btn-sm mr-1" href="#">Closed</a>
+                            {% if item.status == 'finished' %}
+                                <a class="btn btn-light btn-sm mr-1" href="#">completed</a>
+                            {% endif %}
                         {% else %}
-                            <a class="btn btn-dark btn-sm mr-1" href="#">Start working</a>
-                            <a class="btn btn-success btn-sm mr-1" href="#">Finished</a>
+                            {% if item.status == 'pending' %}
+                                <a class="btn btn-dark btn-sm mr-1" href="#">Start working</a>
+                            {% endif %}
+                            {% if item.status == 'working' %}
+                                <a class="btn btn-success btn-sm mr-1" href="#">Finished</a>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -65,7 +82,21 @@
                 <tr>
                     <td colspan="{% if is_granted('ROLE_ADMIN') %}6{% else %}5{% endif %}">
                         <div class="alert alert-danger m-0">
-                            There are no tasks yet, please creare some.
+
+                            {% if app.request.query.get('q') %}
+                                
+                                There are not tasks with the name <b>"{{ app.request.query.get('q') }}"</b>
+                            
+                            {% elseif is_granted('ROLE_ADMIN') %}
+                            
+                                There are no tasks yet, please creare some.
+                            
+                            {% else %}
+
+                                There are not tasks assigned to you, please wait until the admin assign some tasks for you.
+                            
+                            {% endif %}
+
                         </div>
                     </td>
                 </tr>
