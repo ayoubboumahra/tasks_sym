@@ -10,6 +10,7 @@ use App\Repository\TaskRepository;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ORM\Entity(repositoryClass=TaskRepository::class)
@@ -28,6 +29,7 @@ class Task
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message= "OPS, the title is required")
      */
     private $title;
 
@@ -192,5 +194,21 @@ class Task
         $this->deleted_at = $deleted_at;
 
         return $this;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validate (ExecutionContextInterface $context, $payload)
+    {
+        if ( $this->getPriority() != "bug" ) {
+
+            $context
+                ->buildViolation("Oh shit, you need to choose bug this time Miss")
+                ->atPath('priority')
+                ->addViolation()    
+            ;
+
+        }
     }
 }

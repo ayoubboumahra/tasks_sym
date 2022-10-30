@@ -13,6 +13,13 @@
     </div>
 
     {{ form_start(task_form) }}
-    {{ form_end(task_form) }}
+        {% block _task_title %}
+            <h1>OKOK</h1>
+        {% endblock %}
+        {{ form_row(task_form.description) }}
+        {{ form_row(task_form.priority) }}
+        {{ form_row(task_form.assigned_to) }}
+
+    {{ form_end(task_form,) }}
 
 {% endblock %}
